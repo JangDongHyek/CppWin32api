@@ -148,13 +148,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-    case WM_PAINT:
+    case WM_PAINT:  // 무효화 영역(Invalidate)이 발생한 경우 WM_PAINT 실행 
+                    //옛날에는 창을 가린만큼 무효화영역이 일어졌지만 업데이트후 최소화 영역후 무효화 영역이 실행됌
         {
+            //커널 오브젝트 : 윈도우가 관리하는 객체
             PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
 
+            // Device Context 커널 오브젝트를 만들어서 ID를 반환 HDC 관련 구조체 변수에 담음
+            // HDC,HWND 이런 구조체의 자료는 int밖에없지만 구분을 위해 구조체를 만들어서 변수를 최소화 할려는 의도
+            HDC hdc = BeginPaint(hWnd, &ps); // Device Context (그리기 관련 커널 오브젝트)
+            // DC 의 목적지는 hWnd
+            // DC 의 펜은 기본펜 (Black)
+            // DC 의 브러쉬는 기본 브러쉬 (White)
+
+            
+            
             //윈도우 핸들
-            //윈도우 좌표
+            //윈도우 좌표 // pixcel 단위 pixcel 은 RGB로 이루어져 3바이트다
             // HDC?
             
             Rectangle(hdc, 10, 10, 110, 110);
