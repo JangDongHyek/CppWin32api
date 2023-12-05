@@ -43,9 +43,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
-    // 기본 메시지 루프입니다:
+    // Get Message
+    // 메세지큐에서 메세지 확인 될 때까지 대기
+    // msg.message == WM_QUIT 일때 False 를 반환 -> 프로그램 종료
+    // 게임으로 만들기에는 부적합
+
     while (GetMessage(&msg, nullptr, 0, 0))
     {
+        
         if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
         {
             TranslateMessage(&msg);
@@ -147,7 +152,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
+
+            //윈도우 핸들
+            //윈도우 좌표
+            // HDC?
+            
+            Rectangle(hdc, 10, 10, 110, 110);
             EndPaint(hWnd, &ps);
         }
         break;
