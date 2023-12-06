@@ -52,14 +52,54 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // msg.message == WM_QUIT 일때 False 를 반환 -> 프로그램 종료
     // 게임으로 만들기에는 부적합
 
-    while (GetMessage(&msg, nullptr, 0, 0))
+    // PeekMessage
+    // 메세지 유무와 관계없이 항상 반환
+    // 메세지큐에 메세지가있을경우 true 없을경우 false를 반환
+
+    //1초를 1000단위로 나눠서 가져오는 함수
+    DWORD dwPrevCount = GetTickCount();
+    DWORD dwAccCount = 0;
+    while (true)
     {
-        
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+            if (WM_QUIT == msg.message) break;
+            // 메세지를 처리할때 시작 시간
+            int iTime = GetTickCount();
+
+            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+            // 시작시간과 이벤트 처리가 걸린시간을 뺴서 결과값을 누적
+            int iAdd = (GetTickCount() - iTime);
+            dwAccCount += iAdd;
         }
+        else { // 메세지가 없는동안 호출
+            // 메세지가 없을때 시작 시간
+            DWORD dwCurCount = GetTickCount();
+            // 현재시간과 프로그램 시작시간 을 뺴서 1초가 됐을때
+            if (dwCurCount - dwPrevCount > 1000) {
+                // 1초로 백분율을 실수로 구한다
+                float fRatio = (float)dwAccCount / 1000.f;
+                // 실수를 문자화 하기위한 배열 초기화
+                wchar_t szBuff[50] = {};
+                // 실수를 문자화 하는 함수
+                swprintf_s(szBuff, L"비율 : %f", fRatio);
+                // 윈도우 타이틀을 백분율 구한 문자열로 변환
+                SetWindowText(g_hWnd, szBuff);
+                // 프로그램 시작 시간 현재시간으로 변경
+                dwPrevCount = dwCurCount;
+                // 누적 시간 초기화
+                dwAccCount = 0;
+
+            }
+
+            // Game 코드 수행
+            // 디자인 패턴 (설계 유형)
+            // 싱글톤 패턴
+        }
+        
     }
 
     //SetTimer함수도 커널오브젝트이기때문에 킬타임 함수로 커널오브젝트 종료
