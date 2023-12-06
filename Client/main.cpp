@@ -8,6 +8,7 @@
 
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
+HWND      g_hWnd; // 메인 윈도우핸들 전역변수화
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
@@ -43,6 +44,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
+    //Get Message 형식은 들어오는 이벤트가 없으면 프로그램이 멈추기떄문에 SetTimer로 일정시간 계속 이벤트를 주입한다
+    //SetTimer(g_hWnd, 0, 0, nullptr);
+
     // Get Message
     // 메세지큐에서 메세지 확인 될 때까지 대기
     // msg.message == WM_QUIT 일때 False 를 반환 -> 프로그램 종료
@@ -58,6 +62,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
+    //SetTimer함수도 커널오브젝트이기때문에 킬타임 함수로 커널오브젝트 종료
+    //KillTimer(g_hWnd, 0);
     return (int) msg.wParam;
 }
 
@@ -103,16 +109,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+   g_hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-   if (!hWnd)
+   if (!g_hWnd)
    {
       return FALSE;
    }
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+   ShowWindow(g_hWnd, nCmdShow);
+   UpdateWindow(g_hWnd);
 
    return TRUE;
 }
@@ -129,9 +135,24 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 // 이벤트가 발생하면넘어오는 message에서 wParam = 키보드 lParam = 마우스이다
 
+#include <vector>
+using std::vector;
 
-POINT g_ptObjPos = {500,300};
-POINT g_ptObjScale = { 100,100 };
+// 오브젝트 구조체 생성
+struct tObjInfo {
+    POINT g_ptObjPos;
+    POINT g_ptObjScale;
+};
+// 오브젝트를 관리할 벡터
+vector<tObjInfo> g_vecInfo;
+
+// 마우스 왼쪽상단
+POINT g_ptLT;
+// 마우스 오른쪽 하단
+POINT g_ptRB;
+// 마우스 클릭 이벤트 체크용 불
+bool bLbtnDown = false;
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -184,10 +205,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             //윈도우 좌표 // pixcel 단위 pixcel 은 RGB로 이루어져 3바이트다
             // HDC?
             
-            Rectangle(hdc,  g_ptObjPos.x - g_ptObjScale.x / 2,
-                            g_ptObjPos.y - g_ptObjScale.y /2,
-                            g_ptObjPos.x + g_ptObjScale.x / 2,
-                            g_ptObjPos.y + g_ptObjScale.y / 2);
+            // 마우스 왼쪽이 클릭한 상태면
+            if (bLbtnDown) {
+                Rectangle(hdc, g_ptLT.x, g_ptLT.y,
+                    g_ptRB.x, g_ptRB.y);
+            }
+
+            // 마우스 이벤트로 생성된 오브젝트들 화면에 생성
+            for (size_t i = 0; i < g_vecInfo.size(); ++i) {
+                Rectangle(hdc,
+                        g_vecInfo[i].g_ptObjPos.x - g_vecInfo[i].g_ptObjScale.x / 2,
+                        g_vecInfo[i].g_ptObjPos.y - g_vecInfo[i].g_ptObjScale.y / 2,
+                        g_vecInfo[i].g_ptObjPos.x + g_vecInfo[i].g_ptObjScale.x / 2,
+                        g_vecInfo[i].g_ptObjPos.y + g_vecInfo[i].g_ptObjScale.y / 2);
+            }
+            
 
             //기본 펜으로 다시 돌려준다
             SelectObject(hdc, hDefaultPen);
@@ -206,20 +238,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         switch (wParam) {
         case VK_UP :
-            g_ptObjPos.y -= 10;
+            //g_ptObjPos.y -= 10;
             InvalidateRect(hWnd, nullptr, true); // 무효화영역을 강제로 발생 시키는 함수 (윈도우핸들,영역 *널값을 넣어주면 전체영억으로 지정,화면을 클리어할지안할지)
             break;
 
         case VK_DOWN :
-            g_ptObjPos.y += 10;
+            //g_ptObjPos.y += 10;
             InvalidateRect(hWnd, nullptr, true);
             break;
         case VK_LEFT:
-            g_ptObjPos.x -= 10;
+            //g_ptObjPos.x -= 10;
             InvalidateRect(hWnd, nullptr, true);
             break;
         case VK_RIGHT:
-            g_ptObjPos.x += 10;
+            //g_ptObjPos.x += 10;
             InvalidateRect(hWnd, nullptr, true);
             break;
         case 'W' : // 키보드의 영문쪽에 들어오는 애들은 아스키코드로 들어온다 즉 w랑 W랑 다르기때문에 해당 애들은 대문자로 구분한다
@@ -233,12 +265,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         //lParam 에 들어오는 정보는 마우스좌표이다 해당구조체는 int64로 아마 아키텍쳐의 정보를 따라가는듯하다 32비트면 int32
         //x좌표y좌표 반반씩 자리를 차지하며 64비트일땐 8바이트로 4바이트씩 자리를 차지하는것같다
-        LOWORD(lParam); // 매크로함수로 인해 x 좌표를 알수있다
-        HIWORD(lParam); // ''
+        g_ptLT.x = LOWORD(lParam); // 매크로함수로 인해 x 좌표를 알수있다
+        g_ptLT.y = HIWORD(lParam); // ''
+        bLbtnDown = true;
+    }
+        break;
+
+    case WM_MOUSEMOVE : 
+    {
+        g_ptRB.x = LOWORD(lParam);
+        g_ptRB.y = HIWORD(lParam);
+        InvalidateRect(hWnd, nullptr, true);
+    }
+        break;
+
+    case WM_LBUTTONUP: 
+    {
+        // 마우스이벤트가 끝날떄 실행되는 부분
+        tObjInfo info = {};
+        info.g_ptObjPos.x = (g_ptLT.x + g_ptRB.x) / 2;
+        info.g_ptObjPos.y = (g_ptLT.y + g_ptRB.y) / 2;
+
+        info.g_ptObjScale.x = abs(g_ptLT.x - g_ptRB.x);
+        info.g_ptObjScale.y = abs(g_ptLT.y - g_ptRB.y);
+
+        g_vecInfo.push_back(info);
+        bLbtnDown = false;
+        InvalidateRect(hWnd, nullptr, true);
     }
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
+        break;
+
+    case WM_TIMER : // SetTimer 함수로 들어오는 정해진 시간마다 들어오는 콜백 이벤트 부분
+    {
+
+    }
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
