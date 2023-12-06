@@ -1,6 +1,7 @@
 ﻿// Client.cpp : 애플리케이션에 대한 진입점을 정의합니다.
 //
 
+#include "pch.h"
 #include "framework.h"
 #include "Client.h"
 #include "CCore.h";
@@ -48,6 +49,10 @@ class CClass {
 
 int CClass::m_iStatic = 0; // 정적멤버변수는 데이터영역에 올라갈거기때문에 꼭 초기화를 해줘야한다 안해주면 링크에러가 뜬다
 
+//매크로 함수는 함수가아니라 전처리기때문에 그 부분을 정확히 인지해야한다
+// int a = ADD(10,10) * 3 을했을때 10 + 10 * 3 으로 치환되기때문이다
+#define ADD(a,b) a + b;
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -74,6 +79,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 애플리케이션 초기화를 수행합니다:
     if (!InitInstance (hInstance, nCmdShow))
     {
+        return FALSE;
+    }
+
+    //Core 초기화
+    if (FAILED(CCore::GetInst()->init(g_hWnd, POINT{1280,768}))) {
+        MessageBox(nullptr, L"Core 객체 초기화 실패", L"ERROR", MB_OK);
         return FALSE;
     }
 
@@ -108,6 +119,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             // Game 코드 수행
             // 디자인 패턴 (설계 유형)
             // 싱글톤 패턴
+            CCore::GetInst()->progress();
         }
         
     }

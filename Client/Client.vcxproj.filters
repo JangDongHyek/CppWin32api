@@ -11,11 +11,17 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Engine\02. Core">
+      <UniqueIdentifier>{eb634a58-d5c2-47ed-8f2b-d4f9c3b90bfe}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Engine\01. Header">
       <UniqueIdentifier>{eb518c26-b4bb-4009-8e58-16269afa0b39}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\02. Core">
-      <UniqueIdentifier>{eb634a58-d5c2-47ed-8f2b-d4f9c3b90bfe}</UniqueIdentifier>
+    <Filter Include="Engine\03. Manager">
+      <UniqueIdentifier>{43d46605-ebeb-4f0e-baf5-d97a6a85aac2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\03. Manager\KeyMgr">
+      <UniqueIdentifier>{7c9a7218-f15c-4756-b9d8-203eb9f64315}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -34,14 +40,22 @@
     <ClInclude Include="targetver.h">
       <Filter>Default</Filter>
     </ClInclude>
+    <ClInclude Include="define.h">
+      <Filter>Engine\01. Header</Filter>
+    </ClInclude>
+    <ClInclude Include="CKeyMgr.h">
+      <Filter>Engine\03. Manager\KeyMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CCore.cpp">
       <Filter>Engine\02. Core</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Default</Filter>
+    <ClCompile Include="CKeyMgr.cpp">
+      <Filter>Engine\03. Manager\KeyMgr</Filter>
     </ClCompile>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Client.rc">
