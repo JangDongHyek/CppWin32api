@@ -35,24 +35,21 @@
 
 #include "define.h";
 class CCore {
-	SINGLE(CCore);
-		//static CCore* GetInst() {
-			//정적 멤버는 초기화가 한번만 일어나기때문에 한번만 생성이됌 즉 같은 core를 계속 반환해준다
-			// 클래스 내부이므로 생성자를 사용할수있기때문에 생성자로 객체생성 *정적멤버기때문에 데이터영역에 생성된다
-			//static CCore core;
+SINGLE(CCore);
 
-			//반환을 주소로주기떄문에 해당 객체에 접근해서 수정을 할수있다
-			//데이터 영역에 생성되기때문에 내가 일일히 삭제를 해줄필요가없다
-			//return &core;
-		//}
-	private : 
-		HWND	m_hWnd; //메인 윈도우 핸들
-		POINT	m_ptResolution; // 메인 윈도우 해상도
-	public:
-		int init(HWND _hWnd, POINT _ptResolution);
-		void progress();
+private : 
+	HWND	m_hWnd; //메인 윈도우 핸들
+	POINT	m_ptResolution; // 메인 윈도우 해상도
+	HDC		m_hDC; // 메인 윈도우에 Draw 할 DC
+public:
+	int init(HWND _hWnd, POINT _ptResolution);
+	void progress();
 
-	private:
-		CCore();
-		~CCore();
+private:
+	void update();
+	void render();
+
+private:
+	CCore();
+	~CCore();
 };

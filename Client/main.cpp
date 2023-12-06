@@ -195,23 +195,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 // 이벤트가 발생하면넘어오는 message에서 wParam = 키보드 lParam = 마우스이다
 
-#include <vector>
-using std::vector;
-
-// 오브젝트 구조체 생성
-struct tObjInfo {
-    POINT g_ptObjPos;
-    POINT g_ptObjScale;
-};
-// 오브젝트를 관리할 벡터
-vector<tObjInfo> g_vecInfo;
-
-// 마우스 왼쪽상단
-POINT g_ptLT;
-// 마우스 오른쪽 하단
-POINT g_ptRB;
-// 마우스 클릭 이벤트 체크용 불
-bool bLbtnDown = false;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -243,52 +226,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Device Context 커널 오브젝트를 만들어서 ID를 반환 HDC 관련 구조체 변수에 담음
             // HDC,HWND 이런 구조체의 자료는 int밖에없지만 구분을 위해 구조체를 만들어서 변수를 최소화 할려는 의도
             HDC hdc = BeginPaint(hWnd, &ps); // Device Context (그리기 관련 커널 오브젝트)
-            // DC 의 목적지는 hWnd
-            // DC 의 펜은 기본펜 (Black)
-            // DC 의 브러쉬는 기본 브러쉬 (White)
 
-            //직접 펜을 만들어서 DC 에 지급
-            HPEN hRedPen = CreatePen(PS_SOLID,1,RGB(255,0,0));
-
-            // SelectObject 함수는 범용적인 함수이기때문에 반환되는 값 HGDIOBJ는 보이드타입이다 그래서 HPEN으로 캐스팅후 받아준다
-            // 돌아오는 값은 전에 적용되어있던 오브젝트값이 반환된다 즉 지금은 펜을 바꿔줬으니 DefaultPen값인 커널 오브젝트가 반환된다
-            HPEN hDefaultPen = (HPEN)SelectObject(hdc, hRedPen);
-
-            // 자주 사용하는 색이나 코드들은 사용하기 편하게 ms에서 제공해준다 그게 해당 함수 GetStockObject이다 
-            // docsMS 들어가서 확인하여 사용하면 간편하다
-            HBRUSH hDkGray = (HBRUSH)GetStockObject(DKGRAY_BRUSH);
-            HBRUSH hDefaultBrush = (HBRUSH)SelectObject(hdc, hDkGray);
-
-            
-            
-            //윈도우 핸들
-            //윈도우 좌표 // pixcel 단위 pixcel 은 RGB로 이루어져 3바이트다
-            // HDC?
-            
-            // 마우스 왼쪽이 클릭한 상태면
-            if (bLbtnDown) {
-                Rectangle(hdc, g_ptLT.x, g_ptLT.y,
-                    g_ptRB.x, g_ptRB.y);
-            }
-
-            // 마우스 이벤트로 생성된 오브젝트들 화면에 생성
-            for (size_t i = 0; i < g_vecInfo.size(); ++i) {
-                Rectangle(hdc,
-                        g_vecInfo[i].g_ptObjPos.x - g_vecInfo[i].g_ptObjScale.x / 2,
-                        g_vecInfo[i].g_ptObjPos.y - g_vecInfo[i].g_ptObjScale.y / 2,
-                        g_vecInfo[i].g_ptObjPos.x + g_vecInfo[i].g_ptObjScale.x / 2,
-                        g_vecInfo[i].g_ptObjPos.y + g_vecInfo[i].g_ptObjScale.y / 2);
-            }
-            
-
-            //기본 펜으로 다시 돌려준다
-            SelectObject(hdc, hDefaultPen);
-            SelectObject(hdc, hDefaultBrush);
-            
-            //빨간펜은 역확을 다 해서 삭제해준다
-            // 여기서 delete 함수를 쓰지않고 DeleteObject를 사용하는 이유는 os가 관리하는 커널오브젝트이기때문에 os함수를 사용해 객체를 삭제
-            DeleteObject(hRedPen);
-            DeleteObject(hDkGray);
+    
+            //Rectangle(hdc, 1180, 0 , 1280, 100);
+      
 
             EndPaint(hWnd, &ps);
         }
@@ -296,73 +237,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_KEYDOWN :
     {
-        switch (wParam) {
-        case VK_UP :
-            //g_ptObjPos.y -= 10;
-            InvalidateRect(hWnd, nullptr, true); // 무효화영역을 강제로 발생 시키는 함수 (윈도우핸들,영역 *널값을 넣어주면 전체영억으로 지정,화면을 클리어할지안할지)
-            break;
-
-        case VK_DOWN :
-            //g_ptObjPos.y += 10;
-            InvalidateRect(hWnd, nullptr, true);
-            break;
-        case VK_LEFT:
-            //g_ptObjPos.x -= 10;
-            InvalidateRect(hWnd, nullptr, true);
-            break;
-        case VK_RIGHT:
-            //g_ptObjPos.x += 10;
-            InvalidateRect(hWnd, nullptr, true);
-            break;
-        case 'W' : // 키보드의 영문쪽에 들어오는 애들은 아스키코드로 들어온다 즉 w랑 W랑 다르기때문에 해당 애들은 대문자로 구분한다
-
-            break;
-        }
     }
         break;
 
     case WM_LBUTTONDOWN : // 마우스 왼쪽버튼이 다운됐을때 실행되는 이벤트
     {
-        //lParam 에 들어오는 정보는 마우스좌표이다 해당구조체는 int64로 아마 아키텍쳐의 정보를 따라가는듯하다 32비트면 int32
-        //x좌표y좌표 반반씩 자리를 차지하며 64비트일땐 8바이트로 4바이트씩 자리를 차지하는것같다
-        g_ptLT.x = LOWORD(lParam); // 매크로함수로 인해 x 좌표를 알수있다
-        g_ptLT.y = HIWORD(lParam); // ''
-        bLbtnDown = true;
+     
     }
         break;
 
     case WM_MOUSEMOVE : 
-    {
-        g_ptRB.x = LOWORD(lParam);
-        g_ptRB.y = HIWORD(lParam);
-        InvalidateRect(hWnd, nullptr, true);
-    }
+
         break;
 
     case WM_LBUTTONUP: 
-    {
-        // 마우스이벤트가 끝날떄 실행되는 부분
-        tObjInfo info = {};
-        info.g_ptObjPos.x = (g_ptLT.x + g_ptRB.x) / 2;
-        info.g_ptObjPos.y = (g_ptLT.y + g_ptRB.y) / 2;
-
-        info.g_ptObjScale.x = abs(g_ptLT.x - g_ptRB.x);
-        info.g_ptObjScale.y = abs(g_ptLT.y - g_ptRB.y);
-
-        g_vecInfo.push_back(info);
-        bLbtnDown = false;
-        InvalidateRect(hWnd, nullptr, true);
-    }
+   
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
 
-    case WM_TIMER : // SetTimer 함수로 들어오는 정해진 시간마다 들어오는 콜백 이벤트 부분
-    {
-
-    }
-        break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
