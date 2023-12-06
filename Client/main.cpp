@@ -3,6 +3,7 @@
 
 #include "framework.h"
 #include "Client.h"
+#include "CCore.h";
 
 #define MAX_LOADSTRING 100
 
@@ -18,6 +19,35 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+// 지역
+// 전역
+// 정적 (데이터 영역)
+// 1. 함수안에
+// 2. 파일
+// 3. 클래스
+// 외부
+
+class CClass {
+    private :
+        int m_i;
+    public :
+        static int m_iStatic; // 정적 멤버 (데이터영역)
+        
+    public : 
+        // this가 약어로 있기때문에 객체로만 접근가능
+        void func() {
+            m_i = 0; // this가 약어로 있다
+            m_iStatic = 0; // this가 약어로 없다
+        }
+
+        //정적 멤버함수, 객체없이 호출가능, this가 없다 (멤버 전급불가), 정적 멤버는 접근가능
+        static void FUNC() {
+            m_iStatic = 0;
+        }
+};
+
+int CClass::m_iStatic = 0; // 정적멤버변수는 데이터영역에 올라갈거기때문에 꼭 초기화를 해줘야한다 안해주면 링크에러가 뜬다
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -25,6 +55,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
+
+    CClass a;
+    a.func();
+
+    CClass::FUNC();
+    CClass::m_iStatic = 0;
+
+
 
     // TODO: 여기에 코드를 입력합니다.
 
@@ -44,9 +82,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     MSG msg;
 
-    //Get Message 형식은 들어오는 이벤트가 없으면 프로그램이 멈추기떄문에 SetTimer로 일정시간 계속 이벤트를 주입한다
-    //SetTimer(g_hWnd, 0, 0, nullptr);
-
     // Get Message
     // 메세지큐에서 메세지 확인 될 때까지 대기
     // msg.message == WM_QUIT 일때 False 를 반환 -> 프로그램 종료
@@ -56,44 +91,19 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 메세지 유무와 관계없이 항상 반환
     // 메세지큐에 메세지가있을경우 true 없을경우 false를 반환
 
-    //1초를 1000단위로 나눠서 가져오는 함수
-    DWORD dwPrevCount = GetTickCount();
-    DWORD dwAccCount = 0;
     while (true)
     {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
             if (WM_QUIT == msg.message) break;
-            // 메세지를 처리할때 시작 시간
-            int iTime = GetTickCount();
 
             if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
             {
                 TranslateMessage(&msg);
                 DispatchMessage(&msg);
             }
-            // 시작시간과 이벤트 처리가 걸린시간을 뺴서 결과값을 누적
-            int iAdd = (GetTickCount() - iTime);
-            dwAccCount += iAdd;
+      
         }
         else { // 메세지가 없는동안 호출
-            // 메세지가 없을때 시작 시간
-            DWORD dwCurCount = GetTickCount();
-            // 현재시간과 프로그램 시작시간 을 뺴서 1초가 됐을때
-            if (dwCurCount - dwPrevCount > 1000) {
-                // 1초로 백분율을 실수로 구한다
-                float fRatio = (float)dwAccCount / 1000.f;
-                // 실수를 문자화 하기위한 배열 초기화
-                wchar_t szBuff[50] = {};
-                // 실수를 문자화 하는 함수
-                swprintf_s(szBuff, L"비율 : %f", fRatio);
-                // 윈도우 타이틀을 백분율 구한 문자열로 변환
-                SetWindowText(g_hWnd, szBuff);
-                // 프로그램 시작 시간 현재시간으로 변경
-                dwPrevCount = dwCurCount;
-                // 누적 시간 초기화
-                dwAccCount = 0;
-
-            }
 
             // Game 코드 수행
             // 디자인 패턴 (설계 유형)
@@ -102,8 +112,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         
     }
 
-    //SetTimer함수도 커널오브젝트이기때문에 킬타임 함수로 커널오브젝트 종료
-    //KillTimer(g_hWnd, 0);
     return (int) msg.wParam;
 }
 
