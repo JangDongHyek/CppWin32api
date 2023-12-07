@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "CCore.h"
 #include "CObject.h"
-
+#include "CTimeMgr.h"
+#include "CKeyMgr.h"
 //CCore* CCore::g_pInst = nullptr; // 전역변수기때문에 초기화 한번
 
 
@@ -36,8 +37,14 @@ int CCore::init(HWND _hWnd, POINT _ptResolution)
 
 	m_hDC = GetDC(m_hWnd);
 
-	g_obj.m_ptPos = POINT{ m_ptResolution.x / 2, m_ptResolution.y / 2 };
-	g_obj.m_ptScale = POINT{ 100,100 };
+	// Manager 초기화
+	CTimeMgr::GetInst()->init();
+	CKeyMgr::GetInst()->init();
+
+
+
+	g_obj.SetPos(Vec2((float) (m_ptResolution.x / 2), (float) (m_ptResolution.y / 2 )));
+	g_obj.SetScale(Vec2( 100,100 ));
 
 	return S_OK;
 }
@@ -45,17 +52,6 @@ int CCore::init(HWND _hWnd, POINT _ptResolution)
 
 void CCore::progress()
 {
-	static int callcount = 0; // 프로그래스가 호출되는 카운트
-	++callcount;
-
-	static int iPrevCount = GetTickCount(); // 정적 멤버 변수기 떄문에 한번만 초기화 됌
-	int iCurCount = GetTickCount();
-	if (iCurCount - iPrevCount > 1000) // 1초가 지났을때 몇번 호출됐는지 확인하기위한 조건
-	{
-		iPrevCount = iCurCount;
-		callcount = 0;
-	}
-	
 	update();
 
 	render();
@@ -64,24 +60,31 @@ void CCore::progress()
 
 void CCore::update()
 {
+	Vec2 vPos = g_obj.GetPos();
+
 	// 키의 상태값을 가져오는 함수 * 이전에 눌렸다 눌리고있다 프로그램 실행중 눌렸다 등등 비트값으로 반환
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000) // 그냥 키가 눌렸나 확인해보고싶으면 0x8000 비트값을 and 연사자로 확인
 	{
-		g_obj.m_ptPos.x -= 1;
+		vPos.x -= 0.01f;
 	}
 
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
 	{
-		g_obj.m_ptPos.x += 1;
+		vPos.x += 0.01f;
 	}
+
+	g_obj.SetPos(vPos);
 }
 
 void CCore::render()
 {
+	Vec2 vPos = g_obj.GetPos();
+	Vec2 vScale = g_obj.GetScale();
+
 	// 그리기
 	Rectangle(m_hDC,
-			g_obj.m_ptPos.x- g_obj.m_ptScale.x / 2,
-			g_obj.m_ptPos.y - g_obj.m_ptScale.y / 2,
-			g_obj.m_ptPos.x + g_obj.m_ptScale.x / 2, 
-			g_obj.m_ptPos.y + g_obj.m_ptScale.y / 2);
+			int(vPos.x - vScale.x / 2.f),
+			int(vPos.y - vScale.y / 2.f),
+			int(vPos.x + vScale.x / 2.f), 
+			int(vPos.y + vScale.y / 2.f));
 }

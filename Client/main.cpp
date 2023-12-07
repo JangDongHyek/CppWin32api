@@ -4,7 +4,7 @@
 #include "pch.h"
 #include "framework.h"
 #include "Client.h"
-#include "CCore.h";
+#include "CCore.h"
 
 #define MAX_LOADSTRING 100
 
