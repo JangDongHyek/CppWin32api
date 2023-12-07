@@ -3,7 +3,7 @@
 #include "CObject.h"
 #include "CTimeMgr.h"
 #include "CKeyMgr.h"
-//CCore* CCore::g_pInst = nullptr; // 전역변수기때문에 초기화 한번
+#include "CSceneMgr.h"
 
 
 
@@ -53,6 +53,7 @@ int CCore::init(HWND _hWnd, POINT _ptResolution)
 	// Manager 초기화
 	CTimeMgr::GetInst()->init();
 	CKeyMgr::GetInst()->init();
+	CSceneMgr::GetInst()->init();
 
 
 
