@@ -14,6 +14,8 @@ CCore::CCore()
 	: m_hWnd(0)
 	, m_ptResolution{}
 	, m_hDC(0)
+	, m_hBit(0)
+	, m_memDC(0)
 {
 
 }
@@ -21,6 +23,9 @@ CCore::CCore()
 CCore::~CCore() 
 {
 	ReleaseDC(m_hWnd, m_hDC); // 커널 오브젝트 DC 종료
+
+	DeleteDC(m_memDC);
+	DeleteObject(m_hBit);
 }
 
 int CCore::init(HWND _hWnd, POINT _ptResolution)
@@ -36,6 +41,14 @@ int CCore::init(HWND _hWnd, POINT _ptResolution)
 	SetWindowPos(m_hWnd, nullptr, 100, 100, rt.right - rt.left, rt.bottom - rt.top, 0);
 
 	m_hDC = GetDC(m_hWnd);
+
+	// 프로그램의 작업영역을 비트맵이라 칭한다
+	// 이중 버퍼링 용도의 비트맵과 DC 를 만든다.
+	m_hBit = CreateCompatibleBitmap(m_hDC, m_ptResolution.x, m_ptResolution.y); // DC를 호환할 비트맵 생성
+	m_memDC = CreateCompatibleDC(m_hDC); // 호환할 비트맵에 적용시킬 DC 생성
+
+	HBITMAP hOldBit = (HBITMAP)SelectObject(m_memDC, m_hBit); // 반환되는 값으로 DC가 생성시 가지고있던 1픽셀크기의 비트맵이 반환된다
+	DeleteObject(hOldBit); // 쓸모없는 더미 비트맵 커널 오브젝트 삭제
 
 	// Manager 초기화
 	CTimeMgr::GetInst()->init();
@@ -82,13 +95,20 @@ void CCore::update()
 
 void CCore::render()
 {
+	// 화면 Clear
+	Rectangle(m_memDC, -1, -1, m_ptResolution.x + 1, m_ptResolution.y + 1);
+
 	Vec2 vPos = g_obj.GetPos();
 	Vec2 vScale = g_obj.GetScale();
 
 	// 그리기
-	Rectangle(m_hDC,
+	Rectangle(m_memDC,
 			int(vPos.x - vScale.x / 2.f),
 			int(vPos.y - vScale.y / 2.f),
 			int(vPos.x + vScale.x / 2.f), 
 			int(vPos.y + vScale.y / 2.f));
+
+	// 비트맵 DC를 다른 비트맵DC에 복사하는 함수
+	BitBlt(m_hDC, 0, 0, m_ptResolution.x, m_ptResolution.y,
+		m_memDC, 0, 0, SRCCOPY);
 }
