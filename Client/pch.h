@@ -2,7 +2,11 @@
 
 // 미리 컴파일된 헤더
 
-#include <stdio.h>
+#include <iostream>
 #include <Windows.h>
+
+#include <vector>
+using std::vector;
+
 #include "define.h"
 #include "struct.h"

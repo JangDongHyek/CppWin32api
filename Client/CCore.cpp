@@ -67,6 +67,7 @@ void CCore::progress()
 {
 	// Manager Update
 	CTimeMgr::GetInst()->update();
+	CKeyMgr::GetInst()->update();
 
 	update();
 
@@ -78,16 +79,15 @@ void CCore::update()
 {
 	Vec2 vPos = g_obj.GetPos();
 
-	// 키의 상태값을 가져오는 함수 * 이전에 눌렸다 눌리고있다 프로그램 실행중 눌렸다 등등 비트값으로 반환
-	if (GetAsyncKeyState(VK_LEFT) & 0x8000) // 그냥 키가 눌렸나 확인해보고싶으면 0x8000 비트값을 and 연사자로 확인
+	if (CKeyMgr::GetInst()->GetKeyState(KEY::LEFT) == KEY_STATE::TAP)
 	{
 		//구해온 DT값으로 초당 이동량을 고정 시킨다
-		vPos.x -= 100.f * CTimeMgr::GetInst()->GetfDT();
+		vPos.x -= 100.f; // * CTimeMgr::GetInst()->GetfDT();
 	}
 
-	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
+	if (CKeyMgr::GetInst()->GetKeyState(KEY::RIGHT) == KEY_STATE::TAP)
 	{
-		vPos.x += 100.f * CTimeMgr::GetInst()->GetfDT();
+		vPos.x += 100.f; // * CTimeMgr::GetInst()->GetfDT();
 	}
 
 	g_obj.SetPos(vPos);
