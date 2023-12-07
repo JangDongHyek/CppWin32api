@@ -79,15 +79,15 @@ void CCore::update()
 {
 	Vec2 vPos = g_obj.GetPos();
 
-	if (CKeyMgr::GetInst()->GetKeyState(KEY::LEFT) == KEY_STATE::TAP)
+	if (CKeyMgr::GetInst()->GetKeyState(KEY::LEFT) == KEY_STATE::HOLD)
 	{
 		//구해온 DT값으로 초당 이동량을 고정 시킨다
-		vPos.x -= 100.f; // * CTimeMgr::GetInst()->GetfDT();
+		vPos.x -= 100.f * CTimeMgr::GetInst()->GetfDT();
 	}
 
-	if (CKeyMgr::GetInst()->GetKeyState(KEY::RIGHT) == KEY_STATE::TAP)
+	if (CKeyMgr::GetInst()->GetKeyState(KEY::RIGHT) == KEY_STATE::HOLD)
 	{
-		vPos.x += 100.f; // * CTimeMgr::GetInst()->GetfDT();
+		vPos.x += 100.f * CTimeMgr::GetInst()->GetfDT();
 	}
 
 	g_obj.SetPos(vPos);
