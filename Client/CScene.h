@@ -19,7 +19,7 @@ public:
 	virtual void Enter() = 0; // = 0 이거를 넣으면 순수가상함수 (추상화클래스) 가 되고 해당 부모를 상속하는애들은 순수가상함수를 무조건 오버라이드해야된다
 	virtual void Exit() = 0;
 
-protected:
+public:
 	// 부모의 변수를 사용하기위해 protected를 사용할수있지만 에러의 범용성을 갖기위해 함수화로 진행 *교수st
 	void AddObject(CObject* _pObj, GROUP_TYPE _eType) 
 	{
