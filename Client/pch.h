@@ -8,6 +8,8 @@
 #include <vector>
 using std::vector;
 
+#include <math.h>
+
 #include <string>
 using std::string;
 using std::wstring;
