@@ -6,6 +6,23 @@ struct Vec2
 	float y;
 
 public:
+	float Length()
+	{
+		return sqrt(x * x + y * y);
+	}
+
+	Vec2& Normalize()
+	{
+		float fLen = Length();
+
+		//0 일경우 연산이 안되기 떄문에 예외처리
+		assert(fLen != 0);
+		x /= fLen; 
+		y /= fLen;
+		return *this;
+	}
+
+public:
 	Vec2& operator = (POINT _pt)
 	{
 		x = (float)_pt.x;

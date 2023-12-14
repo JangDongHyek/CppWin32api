@@ -9,6 +9,7 @@
 using std::vector;
 
 #include <math.h>
+#include <assert.h>
 
 #include <string>
 using std::string;
